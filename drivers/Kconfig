@@ -37,6 +37,16 @@ menu "Hardware Drivers Config"
             select BSP_USING_SOFT_I2C1
             default n
 
+        config PKG_USING_DHT11
+            bool "Enable DHT11 Driver"
+            default n
+
+        if PKG_USING_DHT11
+            config PKG_USING_DHT11_SAMPLE
+                bool "Using DHT11 example"
+                default n
+        endif
+
          config BSP_USING_TF_CARD
             bool "Enable TF_CARD"
             select BSP_USING_SPI
