@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "wm_gpio.h": "c",
+        "wm_regs.h": "c"
+    }
+}

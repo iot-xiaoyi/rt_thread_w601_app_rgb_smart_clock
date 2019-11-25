@@ -2,7 +2,10 @@ from building import *
 
 cwd     = GetCurrentDir()
 src     = Glob('*.c')
+src    += Glob('bsp/*.c')
+
 CPPPATH = [str(Dir('#')), cwd]
+CPPPATH += [cwd + '/bsp']
 
 group = DefineGroup('Applications', src, depend = [''], CPPPATH = CPPPATH)
 

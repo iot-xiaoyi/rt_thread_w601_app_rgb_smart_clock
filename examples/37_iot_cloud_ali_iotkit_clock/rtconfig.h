@@ -92,6 +92,7 @@
 #define RT_USING_I2C
 #define RT_USING_I2C_BITOPS
 #define RT_USING_PIN
+#define RT_USING_ADC
 #define RT_USING_MTD_NOR
 #define RT_USING_RTC
 #define RT_USING_SOFT_RTC
@@ -296,7 +297,6 @@
 /* Onboard Peripheral Drivers */
 
 #define PKG_USING_DHT11
-#define PKG_USING_DHT11_SAMPLE
 #define BSP_USING_FLASH
 #define SPI_FLASH_DEVICE_NAME "fl_spi"
 #define SPI_FLASH_TYPE_NAME "w25q128"
@@ -307,6 +307,8 @@
 #define BSP_USING_UART0
 #define BSP_USING_PIN
 #define BSP_USING_WIFI
+#define BSP_USING_ADC
+#define USING_ADC_CH6
 #define BSP_USING_SPI
 #define WM_SPI_BUS_NAME "spi0"
 

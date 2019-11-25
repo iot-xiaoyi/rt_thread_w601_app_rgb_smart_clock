@@ -18,6 +18,8 @@
 #include <easyflash.h>
 #include <fal.h>
 
+#include "bsp.h"
+
 #define DBG_TAG "main"
 #define DBG_LVL DBG_LOG
 #include <rtdbg.h>
@@ -35,5 +37,15 @@ int main(void)
     /* 使能 wlan 自动连接 */
     rt_wlan_config_autoreconnect(RT_TRUE);
 
+    /* init bsp */
+    rt_kprintf("start init bsp!\r\n");
+    pm25_init();
+
+    while (1)
+    {
+        pm25_read();
+        rt_thread_mdelay(3000);
+    }
+    
     return 0;
 }
