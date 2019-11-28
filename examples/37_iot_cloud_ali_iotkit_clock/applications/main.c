@@ -43,7 +43,7 @@ int main(void)
 
     while (1)
     {
-        pm25_read();
+        // pm25_read();
         rt_thread_mdelay(3000);
     }
     

@@ -81,7 +81,8 @@ static int dht11_read_temp_sample(void)
 
     return RT_EOK;
 }
-INIT_APP_EXPORT(dht11_read_temp_sample);
+MSH_CMD_EXPORT_ALIAS(dht11_read_temp_sample, dht11_read, dht11 read data)
+
 
 static int rt_hw_dht11_port(void)
 {
@@ -93,4 +94,4 @@ static int rt_hw_dht11_port(void)
 
     return RT_EOK;
 }
-INIT_COMPONENT_EXPORT(rt_hw_dht11_port);
+MSH_CMD_EXPORT_ALIAS(rt_hw_dht11_port, dht11_init, dht11_init)

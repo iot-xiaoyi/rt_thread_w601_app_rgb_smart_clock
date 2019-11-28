@@ -188,7 +188,12 @@ static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt m
             break;
     }
 }
-
+/*
+* /sys/a18KqZHnqsK/9lu2L8BqYJmZngbj2lHh/thing/service/property/set     
+* {"method":"thing.service.property.set","id":"329298186","params":{"CLOSE_WEATHER_VOICE":1},"version":"1.0.0"}
+*
+*
+*/
 static void _demo_message_arrive(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
     iotx_mqtt_topic_info_pt ptopic_info = (iotx_mqtt_topic_info_pt) msg->msg;
@@ -546,11 +551,9 @@ static int ali_mqtt_test_pub(void)
     memset(msg_pub, 0x0, sizeof(msg_pub));
 
     snprintf(msg_pub, sizeof(msg_pub), 
-            "{\"id\" : \"%d\",\"version\":\"1.0\",\"params\" : "
-            "{\"RGBColor\" : {\"Red\":%d,\"Green\":%d,\"Blue\":%d},"
-            "\"LightSwitch\" : %d},"
-            "\"method\":\"thing.event.property.post\"}",
-            ++pub_msg_cnt, rand_num_r, rand_num_g, rand_num_b, rgb_switch);
+            "{\"method\":\"thing.event.property.post\",\"id\":\"%d\", \
+            \"params\":{\"CLOSE_WEATHER_VOICE\":1,\"PM25\":50,\"mtemp\":25,\"mhumi\":45},\"version\":\"1.0.0\"}",
+            ++pub_msg_cnt);
 
     memset(&topic_msg, 0x0, sizeof(iotx_mqtt_topic_info_t));
     topic_msg.qos = IOTX_MQTT_QOS1;
