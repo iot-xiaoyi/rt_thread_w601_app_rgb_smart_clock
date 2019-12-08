@@ -305,10 +305,11 @@
 
 /* Onboard Peripheral Drivers */
 
+#define PKG_USING_DHT11
+#define PKG_USING_DHT11_SAMPLE
 #define BSP_USING_FLASH
 #define SPI_FLASH_DEVICE_NAME "fl_spi"
 #define SPI_FLASH_TYPE_NAME "w25q128"
-#define BSP_USING_AP3216C
 
 /* On-chip Peripheral Drivers */
 
