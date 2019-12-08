@@ -18,6 +18,7 @@
 #include <fal.h>
 #include "wifi_config.h"
 #include "onenet.h"
+#include "user_include.h"
 
 #define DBG_TAG "main"
 #define DBG_LVL DBG_LOG
@@ -65,7 +66,7 @@ int main(void)
 #define POST_DATA1    "{\"power\":\"10\",\"color\":\"1\"}"
 #define POST_DATA2    "{\"power\":\"10\",\"color\":\"2\"}"
 #define POST_DATA3    "{\"power\":\"10\",\"color\":\"3\"}"
-#define POST_DATA4    "{\"power\":\"10\",\"color\":\"4\"}"
+#define POST_DATA4    "{\"temp\":25,\"temp_mode\":1,\"humi\":34,\"time_mode\":1,\"time_show_mode\":1,\"voice\":1,\"timer_set\":[{\"id\":0,\"enable\":1,\"time\":\"09:10\",\"repeat\":0,\"week\":\"1 2 3\"},{\"id\":1,\"enable\":1,\"time\":\"07:10\",\"repeat\":1,\"week\":\"1 2 3 4 5\"}]}"
 
 static void onenet_upload_entry(void *parameter)
 {
@@ -98,7 +99,6 @@ static void onenet_upload_entry(void *parameter)
 	exit:
 	rt_kprintf("upload thread exit!!!");
 }
-
 
 void onenet_upload_cycle(void)
 {
@@ -254,53 +254,6 @@ static void send_mq_msg(char *topic_name, uint8_t * data, int len)
 
 static void onenet_cmd_rsp_cb(char *topic_name, uint8_t *recv_data, size_t recv_size)
 {
-    char res_buf[128] = { 0 };
-	int value = 0;
-
-    rt_kprintf("recv data is %.*s\n", recv_size, recv_data);
-
-	value = atoi((char *)recv_data);
-	rt_kprintf("recv int data is:%d\r\n", value);
-    /* match the command */
-    if (value == 10) //
-    {
-        /* led on */
-        // led_red_on();
-
-        rt_snprintf(res_buf, sizeof(res_buf), "{\"power\":\"10\",\"color\":\"2\"}");
-		
-
-    }else if (value == 0)
-	{
-        /* led off */
-        // led_off();
-
-        rt_snprintf(res_buf, sizeof(res_buf), "{\"power\":\"0\",\"color\":\"1\"}");
-		
-	}
-	else if (value == 2)//��ɫ
-    {
-        /* red led on */
-        // led_red_on();
-
-        rt_snprintf(res_buf, sizeof(res_buf), "{\"power\":\"10\",\"color\":\"2\"}");
-		
-    }
-    else if (value == 3)//��ɫ
-    {
-        /* green led on */
-        // led_green_on();
-
-        rt_snprintf(res_buf, sizeof(res_buf), "{\"power\":\"10\",\"color\":\"3\"}");
-
-    }
-    else if (value == 4)//��ɫ
-    {
-        /* blue led on */
-        // led_blue_on();
-
-        rt_snprintf(res_buf, sizeof(res_buf), "{\"power\":\"10\",\"color\":\"4\"}");
-
-    }
-	send_mq_msg(topic_name, (uint8_t *)res_buf, rt_strlen(res_buf));
+    parse_cmd(topic_name, recv_data, recv_size );
+    rt_memset(recv_data, 0x00, recv_size);
 }
