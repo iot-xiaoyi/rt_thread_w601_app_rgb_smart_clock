@@ -36,7 +36,6 @@ typedef struct _mq_send_msg_t{
 
 
 static void onenet_cmd_rsp_cb(char *topic_name, uint8_t *recv_data, size_t recv_size);
-static void send_mq_msg(char *topic_name, uint8_t * data, int len);
 
 int main(void)
 {
@@ -237,7 +236,7 @@ rt_bool_t onenet_port_is_registed(void)
     return already_register[0] == '1' ? RT_TRUE : RT_FALSE;
 }
 
-static void send_mq_msg(char *topic_name, uint8_t * data, int len)
+void send_mq_msg(char *topic_name, uint8_t * data, int len)
 {
 	mq_send_msg_t msg_send = { 0x00 };
 	
