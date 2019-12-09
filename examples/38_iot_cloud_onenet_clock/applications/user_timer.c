@@ -22,31 +22,31 @@ static void user_sntp_time_synced( void )
 int user_get_time( USER_TIME_S *current_time )
 {
     int err = -1;
-    // int log_num = 0;
+    static int log_num = 0;
     time_t now;
     char month[4] = { 0x00 };
     char week[4] = { 0x00 };
-    char day = 0x00;
-    char hour = 0x00;
-    char minute = 0x00;
-    char second = 0x00;
-    int year = 0x00;
+    char day[4] = {0x00 };
+    char hour[4] = { 0x00 };
+    char minute[4] = {0x00 };
+    char second[4] = {0x00 };
+    int year[4] = {0x00 };
 
     /* output current time */
     now = time(RT_NULL);
-    rt_kprintf("%s", ctime(&now));  //Mon Dec  9 13:14:55 2019
-    sscanf(ctime(&now), "%s %s  %d %d:%d:%d %d", week, month, &day, &hour, &minute, &second, &year);
-    user_timer_log("get local current time:%s %s  %d %d:%d:%d %d", week, month, day, hour, minute, second, year);
+    // rt_kprintf("%s", ctime(&now));  //Mon Dec  9 13:14:55 2019
+    sscanf(ctime(&now), "%[^ ] %[^ ] %[^ ] %[^:]:%[^:]:%[^ ] %s", week, month, day, hour, minute, second, year);
+    // user_timer_log("get local current time:%s-%s-%s  %s %s:%s:%s\r\n", week, month, day, hour, minute, second, year);
 
-    current_time->second = second;
-    current_time->minute = minute;
-    current_time->hour   = hour;
+    current_time->second = atoi(second);
+    current_time->minute = atoi(minute);
+    current_time->hour   = atoi(hour);
     if( current_time->hour>23 )
     {
         current_time->hour = current_time->hour%24;
     }
-    current_time->day     = day;
-    current_time->year    = year;
+    current_time->day     = atoi(day);
+    current_time->year    = atoi(year);
     //week
     if (NULL != rt_strstr(week, "Mon"))
     {
@@ -108,12 +108,12 @@ int user_get_time( USER_TIME_S *current_time )
     {
         current_time->month = 12; 
     }
-    // if ( 0 == (log_num % 10) )
-    // {
-        user_timer_log("current time: year:%d, month:%d, week:%d, day:%d, hour:%d, minute:%d, second:%d, timetamp:%d", \
+    if ( 0 == (log_num % 20) )
+    {
+        user_timer_log("current time: year:%d, month:%d, week:%d, day:%d, hour:%d, minute:%d, second:%d", \
                    current_time->year, current_time->month, current_time->weekday, current_time->day, current_time->hour, current_time->minute, current_time->second);
-    // }
-    // log_num++;
+    }
+    log_num++;
 
     return err;
 }
