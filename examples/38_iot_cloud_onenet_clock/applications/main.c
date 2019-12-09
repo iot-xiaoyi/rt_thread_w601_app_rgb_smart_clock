@@ -35,6 +35,7 @@ typedef struct _mq_send_msg_t{
 }mq_send_msg_t;
 
 static rt_sem_t wait_sem = NULL;
+user_status_data_t data_connect_ctx = { 0x00 };
 
 static void onenet_cmd_rsp_cb(char *topic_name, uint8_t *recv_data, size_t recv_size);
 
@@ -43,6 +44,12 @@ static void wifi_connect_callback(int event, struct rt_wlan_buff *buff, void *pa
     rt_kprintf("%s\n", __FUNCTION__);
     rt_sem_release(wait_sem);
 }
+
+user_status_data_t *user_get_connect_status(void)
+{
+    return &data_connect_ctx;
+}
+
 
 int main(void)
 {
@@ -61,6 +68,7 @@ int main(void)
 
     // 创建一个动态信号量，初始值为0
     wait_sem = rt_sem_create("sem_conn", 0, RT_IPC_FLAG_FIFO);
+    data_connect_ctx.connect_status = 0;
 
     /* 初始化 wlan 自动连接 */
     wlan_autoconnect_init();
@@ -75,6 +83,7 @@ int main(void)
     easyflash_init();
 
 	onenet_network_config();
+    data_connect_ctx.connect_status = 1;
     // wait until module connect to ap success
     ret = rt_sem_take(wait_sem, RT_WAITING_FOREVER);
     if (0 != ret)
@@ -82,6 +91,7 @@ int main(void)
         rt_kprintf("wait_sem error!\r\n");
     }
     rt_kprintf("connect to ap success!\r\n");
+    data_connect_ctx.connect_status = 2;
 
     timer_task_start();
 
@@ -92,6 +102,7 @@ int main(void)
 #define POST_DATA1    "{\"power\":\"10\",\"color\":\"1\"}"
 #define POST_DATA2    "{\"power\":\"10\",\"color\":\"2\"}"
 #define POST_DATA3    "{\"power\":\"10\",\"color\":\"3\"}"
+// #define POST_DATA4    "{\"temp\":25,\"temp_mode\":1,\"humi\":34,\"time_mode\":1,\"time_show_mode\":1,\"voice\":1,\"timer_set\":[]}"
 #define POST_DATA4    "{\"temp\":25,\"temp_mode\":1,\"humi\":34,\"time_mode\":1,\"time_show_mode\":1,\"voice\":1,\"timer_set\":[{\"id\":0,\"enable\":1,\"time\":\"09:10\",\"repeat\":0,\"week\":\"1 2 3\"},{\"id\":1,\"enable\":1,\"time\":\"07:10\",\"repeat\":1,\"week\":\"1 2 3 4 5\"}]}"
 
 static void onenet_upload_entry(void *parameter)
@@ -99,7 +110,8 @@ static void onenet_upload_entry(void *parameter)
 	mq_send_msg_t send_msg = { 0x00 };
 	// led_blue_on();
 	send_mq_msg("$dp", (uint8_t *)POST_DATA4, rt_strlen((char *)POST_DATA4));
-	
+    data_connect_ctx.connect_status = 4;
+
 	while (1)
 	{
 		rt_memset(&send_msg, 0x00, sizeof(send_msg));

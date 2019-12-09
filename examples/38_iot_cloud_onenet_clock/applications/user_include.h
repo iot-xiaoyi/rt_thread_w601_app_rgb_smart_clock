@@ -6,6 +6,12 @@
 #include "errno.h"
 #include <stdint.h>
 
+typedef struct _user_status_data_t{
+    int connect_status; // 0:init, 1:连接路由器中，, 2:连接路由器成功， 3:连接路由器失败 4:连云成功
+}user_status_data_t;
+
+user_status_data_t *user_get_connect_status(void);
+
 /********************** user_timer.c *************************/
 #define LOCAL_TIME_MAX_NUM                     (2)
 #define USER_TIME_NUM_TOKENS                   (30)

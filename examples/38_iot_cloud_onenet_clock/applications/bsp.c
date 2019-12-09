@@ -8,6 +8,7 @@
 
 /* Modify this pin according to the actual wiring situation */
 #define USER_DHT11_DATA_PIN    67  //PB2
+#define POST_DATA_TEMP    "{\"temp\":%d,\"temp_mode\":1,\"humi\":%d,\"time_mode\":1,\"time_show_mode\":1,\"voice\":1}"
 
 
 static int user_dht11_init(void)
@@ -21,6 +22,15 @@ static int user_dht11_init(void)
     return RT_EOK;
 }
 
+int user_data_report(int temp, int humi)
+{
+    char send_data[256] = { 0x00 };
+
+    rt_sprintf(send_data, POST_DATA_TEMP, temp, humi);
+    rt_kprintf("send_data is %s\r\n", send_data);
+    // send_mq_msg("$dp", send_data, strlen(send_data));
+}
+
 void lcd_task_thread(void* arg)
 {
 	uint8_t i = 0;
@@ -28,7 +38,10 @@ void lcd_task_thread(void* arg)
     rt_device_t dev = RT_NULL;
     struct rt_sensor_data sensor_data = { 0x00 }, sensor_data_old = { 0x00 };
     rt_uint8_t get_data_freq = 1; /* 1Hz */
+    int value_change_flag = 0;
     char sval[64] = { 0x00 };
+    uint8_t temp = 0;
+    uint8_t humi = 0;
     // get current time
     time_t now;
     char month[4] = { 0x00 };
@@ -82,19 +95,30 @@ void lcd_task_thread(void* arg)
         {
             if (sensor_data.data.temp >= 0)
             {
-                uint8_t temp = (sensor_data.data.temp & 0xffff) >> 0;      // get temp
-                uint8_t humi = (sensor_data.data.temp & 0xffff0000) >> 16; // get humi
-                rt_kprintf("temp:%d, humi:%d\n" ,temp, humi);
+                temp = (sensor_data.data.temp & 0xffff) >> 0;      // get temp
+                humi = (sensor_data.data.temp & 0xffff0000) >> 16; // get humi
+                rt_kprintf("temp:%d, humi:%d\r\n" ,temp, humi);
                 if (temp != sensor_data_old.data.temp)
                 {
+                    value_change_flag = 1;
                     sensor_data_old.data.temp = temp;
                     lcd_show_num(10+60, 20+24+24, sensor_data_old.data.temp, 1, 24);
+                    // lcd_show_string(10+90, 20+24+24, 24, "'C");
                 }
                 if (humi != sensor_data_old.data.humi)
                 {
+                    value_change_flag = 1;
                     sensor_data_old.data.humi = humi;
                     lcd_show_num(10+60, 20+24+24+24, sensor_data_old.data.humi, 1, 24);
                 }
+            }
+        }
+        if (1 == value_change_flag)
+        {
+            value_change_flag = 0;
+            if (4 == user_get_connect_status()->connect_status)
+            {
+                user_data_report(temp, humi);
             }
         }
         /* output current time */
