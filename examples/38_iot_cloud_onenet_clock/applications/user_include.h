@@ -60,5 +60,9 @@ int user_time_task_result_report(void);
 
 int bsp_init(void);
 
+void beep_open(void);
+
+void beep_close(void);
+
 #endif
 

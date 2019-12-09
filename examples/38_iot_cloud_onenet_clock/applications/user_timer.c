@@ -9,7 +9,8 @@ int user_task_time_coming(char *cmd)
 {
     user_timer_log("##################### Timer coming #####################\r\n");
 
-    user_timer_log("cmd is:%s", cmd);
+    // user_timer_log("cmd is:%s", cmd);
+    beep_open();
 }
 
 /* Callback function when MiCO UTC time in sync to NTP server */

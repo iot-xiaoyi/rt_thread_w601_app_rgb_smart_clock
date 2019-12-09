@@ -5,11 +5,55 @@
 // #include "drv_gpio.h"
 #include "wm_gpio.h"
 #include <time.h>
+#include "pin_config.h"
+
+#define DBG_TAG "bsp"
+#define DBG_LVL DBG_LOG
+#include <rtdbg.h>
 
 /* Modify this pin according to the actual wiring situation */
 #define USER_DHT11_DATA_PIN    67  //PB2
 #define POST_DATA_TEMP    "{\"temp\":%d,\"temp_mode\":1,\"humi\":%d,\"time_mode\":1,\"time_show_mode\":1,\"voice\":1}"
 
+
+void beep_ctrl(void *args)
+{
+    if(rt_pin_read(PIN_KEY0) == PIN_LOW)
+    {
+        rt_pin_write(PIN_BEEP, PIN_HIGH);
+        LOG_D("KEY0 pressed. beep on");
+    }
+    else
+    {
+        rt_pin_write(PIN_BEEP, PIN_LOW);  
+        LOG_D("beep off");        
+    }
+}
+
+void beep_init(void)
+{
+    /* 设置 KEY0 引脚为输入模式 */
+    rt_pin_mode(PIN_KEY0, PIN_MODE_INPUT);
+    /* KEY0 引脚绑定中断回调函数 */
+    rt_pin_attach_irq(PIN_KEY0, PIN_IRQ_MODE_RISING_FALLING, beep_ctrl, RT_NULL);
+    /* 使能中断 */
+    rt_pin_irq_enable(PIN_KEY0, PIN_IRQ_ENABLE);
+    
+    /* 设置 BEEP 引脚为输出模式 */
+    rt_pin_mode(PIN_BEEP, PIN_MODE_OUTPUT);
+    /* 默认蜂鸣器不鸣叫 */
+    rt_pin_write(PIN_BEEP, PIN_LOW);
+}
+
+void beep_open(void)
+{
+    rt_pin_write(PIN_BEEP, PIN_HIGH);
+}
+
+void beep_close(void)
+{
+    rt_pin_write(PIN_BEEP, PIN_LOW);
+}
 
 static int user_dht11_init(void)
 {
@@ -172,6 +216,8 @@ void lcd_task_thread(void* arg)
 int bsp_init(void)
 {
     rt_thread_t tid;
+
+    beep_init();
         /* 清屏 */
     lcd_clear(WHITE);
 
