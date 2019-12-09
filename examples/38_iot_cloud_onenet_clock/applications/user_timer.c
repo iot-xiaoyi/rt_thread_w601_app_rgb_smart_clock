@@ -13,7 +13,7 @@ int user_task_time_coming(char *cmd)
 }
 
 /* Callback function when MiCO UTC time in sync to NTP server */
-static void user_sntp_time_synced( void )
+void user_sntp_time_synced( void )
 {
     time_t ntp_time = 0x00;
     ntp_time = ntp_sync_to_rtc(NULL);
@@ -110,7 +110,7 @@ int user_get_time( USER_TIME_S *current_time )
     }
     if ( 0 == (log_num % 20) )
     {
-        user_timer_log("current time: year:%d, month:%d, week:%d, day:%d, hour:%d, minute:%d, second:%d", \
+        user_timer_log("current time: year:%d, month:%d, week:%d, day:%d, hour:%d, minute:%d, second:%d\r\n", \
                    current_time->year, current_time->month, current_time->weekday, current_time->day, current_time->hour, current_time->minute, current_time->second);
     }
     log_num++;
@@ -226,6 +226,7 @@ void timer_task_thread(void* arg)
 	uint8_t i = 0;
 	USER_TIME_S current_time = { 0x00 };
 
+    rt_thread_delay(3);
     // user_dev_time_flash_read();
     user_sntp_time_synced();
 

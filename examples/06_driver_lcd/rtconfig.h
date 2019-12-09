@@ -146,7 +146,12 @@
 /* miscellaneous packages */
 
 
+/* sample package */
+
 /* samples: kernel and components samples */
+
+
+/* example package: hello */
 
 
 /* W60x Device config */

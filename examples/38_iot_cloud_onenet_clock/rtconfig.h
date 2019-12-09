@@ -305,6 +305,7 @@
 
 /* Onboard Peripheral Drivers */
 
+#define BSP_USING_LCD
 #define PKG_USING_DHT11
 #define PKG_USING_DHT11_SAMPLE
 #define BSP_USING_FLASH

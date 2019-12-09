@@ -34,22 +34,40 @@ typedef struct _mq_send_msg_t{
 	char topic_name[64];
 }mq_send_msg_t;
 
+static rt_sem_t wait_sem = NULL;
 
 static void onenet_cmd_rsp_cb(char *topic_name, uint8_t *recv_data, size_t recv_size);
 
+static void wifi_connect_callback(int event, struct rt_wlan_buff *buff, void *parameter)
+{
+    rt_kprintf("%s\n", __FUNCTION__);
+    rt_sem_release(wait_sem);
+}
+
 int main(void)
 {
+    int ret = 0;
+
     /* 配置 wifi 工作模式 */
     rt_wlan_set_mode(RT_WLAN_DEVICE_STA_NAME, RT_WLAN_STATION);
 
     /* register the wlan ready callback function */
     rt_wlan_register_event_handler(RT_WLAN_EVT_READY, (void ( *)(int , struct rt_wlan_buff *, void *))onenet_mqtt_init, RT_NULL);
-	
+    ret = rt_wlan_register_event_handler(RT_WLAN_EVT_STA_CONNECTED, wifi_connect_callback, RT_NULL);
+    if (0 != ret)
+    {
+        rt_kprintf("register event handler error!\r\n");
+    }
+
+    // 创建一个动态信号量，初始值为0
+    wait_sem = rt_sem_create("sem_conn", 0, RT_IPC_FLAG_FIFO);
+
     /* 初始化 wlan 自动连接 */
     wlan_autoconnect_init();
     /* 使能 wlan 自动连接 */
     rt_wlan_config_autoreconnect(RT_TRUE);
 	
+    bsp_init();
     rt_pin_mode(LED_PIN, PIN_MODE_OUTPUT);
     rt_pin_write(LED_PIN, PIN_LOW);
 
@@ -57,6 +75,13 @@ int main(void)
     easyflash_init();
 
 	onenet_network_config();
+    // wait until module connect to ap success
+    ret = rt_sem_take(wait_sem, RT_WAITING_FOREVER);
+    if (0 != ret)
+    {
+        rt_kprintf("wait_sem error!\r\n");
+    }
+    rt_kprintf("connect to ap success!\r\n");
 
     timer_task_start();
 
@@ -104,11 +129,12 @@ static void onenet_upload_entry(void *parameter)
 void onenet_upload_cycle(void)
 {
     rt_thread_t tid;
-
+    user_sntp_time_synced();
     /* set the command response call back function */
     onenet_set_cmd_rsp_cb(onenet_cmd_rsp_cb);
 	/* init send queue */
 	mq_send = rt_mq_create("mq_send", sizeof(mq_send_msg_t), 10, RT_IPC_FLAG_FIFO);
+    user_sntp_time_synced();
 
     /* create the ambient light data upload thread */
     tid = rt_thread_create("onenet_send",

@@ -88,6 +88,7 @@ static void mqtt_connect_callback(MQTTClient *c)
 static void mqtt_online_callback(MQTTClient *c)
 {
     log_d("Enter mqtt_online_callback!");
+    
     onenet_upload_cycle();
 }
 

@@ -24,17 +24,9 @@ typedef struct _USER_TIMER_S{
     uint32_t    timestamp;
 }USER_TIME_S;
 
-int ntp_sync_process(void* arg);
+void user_sntp_time_synced( void );
+
 void timer_task_start(void);
-
-void cron_converter_to_time(void* arg);
-void localtime_callback(char *postdata);
-
-int user_task_time_countdown_start(void);
-
-int user_task_time_countdown_stop(void);
-
-void timer_task_cycle_thread(void* arg);
 
 
 /******************** recv_cloud_data.c ***********************/
@@ -58,6 +50,8 @@ void send_mq_msg(char *topic_name, uint8_t * data, int len);
 int parse_cmd(char *topic_name, uint8_t *data, int len);
 
 int user_time_task_result_report(void);
+
+int bsp_init(void);
 
 #endif
 
