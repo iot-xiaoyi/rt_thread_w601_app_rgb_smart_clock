@@ -94,6 +94,8 @@ int main(void)
 
     timer_task_start();
 
+    weather_task_start();
+
     return 0;
 }
 

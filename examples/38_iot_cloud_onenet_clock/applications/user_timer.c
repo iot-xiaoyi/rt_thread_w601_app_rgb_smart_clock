@@ -251,7 +251,7 @@ void timer_task_start(void)
     tid = rt_thread_create("local_timer",
                            timer_task_thread,
                            RT_NULL,
-                           2 * 1024,
+                           1496,
                            RT_THREAD_PRIORITY_MAX / 3 - 1,
                            5);
     if (tid)
@@ -259,3 +259,4 @@ void timer_task_start(void)
         rt_thread_startup(tid);
     }
 }
+

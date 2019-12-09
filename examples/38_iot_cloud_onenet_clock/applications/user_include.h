@@ -64,5 +64,7 @@ void beep_open(void);
 
 void beep_close(void);
 
+void weather_task_start(void);
+
 #endif
 

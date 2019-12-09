@@ -21,15 +21,30 @@
 #include "ntp.h"
 
 #define GET_HEADER_BUFSZ        1024        //头部大小
-#define GET_RESP_BUFSZ          1024        //响应缓冲区大小
+#define GET_RESP_BUFSZ          2048        //响应缓冲区大小
 #define GET_URL_LEN_MAX         256         //网址最大长度
-#define GET_URI                 "http://www.weather.com.cn/data/cityinfo/%s.html" //获取天气的 API
-#define AREA_ID                 "101010100" //北京
+#define GET_URI                 "http://v.juhe.cn/weather/index?cityname=%E5%8C%97%E4%BA%AC&dtype=json&format=1&key=7022b77eecfce961ebf58268a656412e" //获取天气的 API
+
+#define POST_DATA_WEATHER    "{\"weather\":\"%s\"}"
+
+
+// http://v.juhe.cn/weather/index?cityname=%E5%8C%97%E4%BA%AC&dtype=json&format=1&key=7022b77eecfce961ebf58268a656412e
+// {"resultcode":"200","reason":"successed!","result":{"sk":{"temp":"-4","wind_direction":"南风","wind_strength":"1级","humidity":"90%","time":"01:34"},"today":{"temperature":"-4℃~9℃","weather":"雾转晴","weather_id":{"fa":"18","fb":"00"},"wind":"西北风4-5级","week":"星期二","city":"北京","date_y":"2019年12月10日","dressing_index":"较冷","dressing_advice":"建议着厚外套加毛衣等服装。年老体弱者宜着大衣、呢外套加羊毛衫。","uv_index":"中等","comfort_index":"","wash_index":"较不宜","travel_index":"较不宜","exercise_index":"较不宜","drying_index":""},"future":{"day_20191210":{"temperature":"-4℃~9℃","weather":"雾转晴","weather_id":{"fa":"18","fb":"00"},"wind":"西北风4-5级","week":"星期二","date":"20191210"},"day_20191211":{"temperature":"-6℃~4℃","weather":"晴","weather_id":{"fa":"00","fb":"00"},"wind":"西北风3-5级","week":"星期三","date":"20191211"},"day_20191212":{"temperature":"-5℃~5℃","weather":"晴","weather_id":{"fa":"00","fb":"00"},"wind":"西南风微风","week":"星期四","date":"20191212"},"day_20191213":{"temperature":"-3℃~9℃","weather":"晴","weather_id":{"fa":"00","fb":"00"},"wind":"北风3-5级","week":"星期五","date":"20191213"},"day_20191214":{"temperature":"-5℃~6℃","weather":"晴转多云","weather_id":{"fa":"00","fb":"01"},"wind":"南风微风","week":"星期六","date":"20191214"},"day_20191215":{"temperature":"-5℃~5℃","weather":"晴","weather_id":{"fa":"00","fb":"00"},"wind":"西南风微风","week":"星期日","date":"20191215"},"day_20191216":{"temperature":"-3℃~9℃","weather":"晴","weather_id":{"fa":"00","fb":"00"},"wind":"北风3-5级","week":"星期一","date":"20191216"}}},"error_code":0}
+
+int user_weather_data_report(char *data)
+{
+    char send_data[256] = { 0x00 };
+
+    rt_sprintf(send_data, POST_DATA_WEATHER, data);
+    rt_kprintf("send_data is %s\r\n", send_data);
+    send_mq_msg("$dp", send_data, strlen(send_data));
+}
+
 
 /* 天气数据解析 */
 void weather_data_parse(rt_uint8_t *data)
 {
-    cJSON *root = RT_NULL, *object = RT_NULL, *item = RT_NULL;
+    cJSON *root = RT_NULL, *object = RT_NULL, *item = RT_NULL, *pvalue = RT_NULL;
     root = cJSON_Parse((const char *)data);
     if (!root)
     {
@@ -37,27 +52,19 @@ void weather_data_parse(rt_uint8_t *data)
         return;
     }
     rt_kprintf("%s", data);
-    object = cJSON_GetObjectItem(root, "sk_info");
-    item = cJSON_GetObjectItem(object, "cityName");
-    rt_kprintf("\ncityName:%s ", item->valuestring);
-    item = cJSON_GetObjectItem(object, "temp");
-    rt_kprintf("\ntemp    :%s ", item->valuestring);
-    item = cJSON_GetObjectItem(object, "wd");
-    rt_kprintf("\nwd      :%s ", item->valuestring);
-    item = cJSON_GetObjectItem(object, "ws");
-    rt_kprintf("\nws      :%s ", item->valuestring);
-    item = cJSON_GetObjectItem(object, "sd");
-    rt_kprintf("\nsd      :%s ", item->valuestring);
-    item = cJSON_GetObjectItem(object, "date");
-    rt_kprintf("\ndate    :%s", item->valuestring);
-    item = cJSON_GetObjectItem(object, "time");
-    rt_kprintf("\ntime    :%s \n", item->valuestring);
+    object = cJSON_GetObjectItem(root, "result");
+    item = cJSON_GetObjectItem(object, "today");
+    pvalue =cJSON_GetObjectItem(item, "weather");
+    rt_kprintf("\r\nweather:%s\r\n ", pvalue->valuestring);
+    user_weather_data_report(pvalue->valuestring);
+
+    pvalue =cJSON_GetObjectItem(item, "temperature");
+    rt_kprintf("\r\temperature:%s ", pvalue->valuestring);
     if (root != RT_NULL)
         cJSON_Delete(root);
 }
 
-
-void weather(int argc, char **argv)
+void weather(void)
 {
     rt_uint8_t *buffer = RT_NULL;
     int resp_status;
@@ -73,7 +80,7 @@ void weather(int argc, char **argv)
         goto __exit;
     }
     /* 拼接 GET 网址 */
-    rt_snprintf(weather_url, GET_URL_LEN_MAX, GET_URI, AREA_ID);
+    rt_snprintf(weather_url, GET_URL_LEN_MAX, "%s", GET_URI);
     /* 创建会话并且设置响应的大小 */
     session = webclient_session_create(GET_HEADER_BUFSZ);
     if (session == RT_NULL)
@@ -135,4 +142,54 @@ __exit:
         rt_free(buffer);
 }
 
-MSH_CMD_EXPORT(weather, Get weather by webclient);
+// MSH_CMD_EXPORT(weather, Get weather by webclient);
+
+
+void weather_task_thread(void* arg)
+{
+    int a =0;
+	uint8_t *p = &a;
+	USER_TIME_S current_time = { 0x00 };
+
+    // user_dev_time_flash_read();
+    while (4 != user_get_connect_status()->connect_status)
+    {
+        rt_thread_delay(1);
+    }
+    
+    rt_thread_delay(3);
+    rt_kprintf("################################### start to get weather");
+    weather();
+
+	while ( 1 )
+	{
+		user_get_time(&current_time);
+        if ((0 == current_time.hour)  && (0 == current_time.minute) && (0 == current_time.second) )
+        {
+            rt_kprintf("########################## sync weather and ntp time #####################\r\n");
+            weather();
+            user_sntp_time_synced();
+        }
+
+        rt_thread_mdelay(1000);
+	}
+}
+
+void weather_task_start(void)
+{
+    rt_thread_t tid;
+
+    // /* create the ambient light data upload thread */
+    // tid = rt_thread_create("local_weather",
+    //                        weather_task_thread,
+    //                        RT_NULL,
+    //                        10*1024,
+    //                        RT_THREAD_PRIORITY_MAX / 3 - 1,
+    //                        5);
+    // if (tid)
+    // {
+    //     rt_thread_startup(tid);
+    // }
+    weather_task_thread(0);
+}
+

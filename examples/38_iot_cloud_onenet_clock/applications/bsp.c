@@ -228,7 +228,7 @@ int bsp_init(void)
     lcd_show_string(10, 20, 24, "Smart weather clock");
     lcd_show_string(10, 20+24+24, 24, "Temp:");
     lcd_show_string(10, 20+24+24+24, 24, "Humi:");
-    lcd_show_string(10, 20+24+24+24+24, 24, "weather:");
+    // lcd_show_string(10, 20+24+24+24+24, 24, "weather:");
     lcd_show_string(10, 20+24+24+24+24+24, 24, "2019-12-09 19:32");
     /* 在 LCD 上画线 */
     // lcd_draw_line(0, 69+16+24+32, 240, 69+16+24+32);
