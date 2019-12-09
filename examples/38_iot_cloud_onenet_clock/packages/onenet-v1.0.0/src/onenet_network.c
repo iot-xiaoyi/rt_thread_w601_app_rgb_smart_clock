@@ -42,7 +42,7 @@ int onenet_network_config(void)
 //	
 //	rt_err_t rt_wlan_start_ap_adv( &info, NULL);
 
-	result = rt_wlan_connect("Beken", "beken888");
+	result = rt_wlan_connect("lxy2305", "123456789a");
     if (result != RT_EOK)
     {
         rt_kprintf("\r\nconnect ssid !\r\n");

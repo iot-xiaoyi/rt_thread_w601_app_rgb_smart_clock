@@ -241,6 +241,8 @@
 #define PKG_NETUTILS_NTP
 #define NETUTILS_NTP_TIMEZONE 8
 #define NETUTILS_NTP_HOSTNAME "cn.ntp.org.cn"
+#define NETUTILS_NTP_HOSTNAME2 "cn.ntp.org.cn"
+#define NETUTILS_NTP_HOSTNAME3 "edu.ntp.org.cn"
 #define PKG_USING_NETUTILS_LATEST_VERSION
 
 /* IoT Cloud */
@@ -271,6 +273,7 @@
 #define PKG_EASYFLASH_ERASE_GRAN 4096
 #define PKG_EASYFLASH_START_ADDR 0
 #define PKG_USING_EASYFLASH_V321
+#define PKG_EASYFLASH_VER_NUM 0x30201
 
 /* system packages */
 
@@ -279,6 +282,7 @@
 #define FAL_PART_TABLE_FLASH_DEV_NAME "w60x_onchip"
 #define FAL_PART_TABLE_END_OFFSET 65536
 #define PKG_USING_FAL_LATEST_VERSION
+#define PKG_FAL_VER_NUM 0x99999
 
 /* peripheral libraries and drivers */
 
@@ -288,12 +292,7 @@
 /* miscellaneous packages */
 
 
-/* sample package */
-
 /* samples: kernel and components samples */
-
-
-/* example package: hello */
 
 
 /* W60x Device config */

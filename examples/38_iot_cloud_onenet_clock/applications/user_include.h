@@ -40,6 +40,7 @@ typedef struct _Time_UserTask_t{
     uint8_t id;
     uint8_t enable;
     uint8_t valid;
+    uint8_t repeat;
     uint8_t weekday;
 	uint8_t run_hour;
 	uint8_t run_min;

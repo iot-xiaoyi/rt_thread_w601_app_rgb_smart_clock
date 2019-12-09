@@ -6,7 +6,7 @@
 #define POST_DATA_TIMER0   "{\"timer_set\":[{\"id\":0,\"enable\":%d,\"time\":\"%d:%d\",\"repeat\":%d,\"week\":\"%s\"}]}"  //\"week\":\"1 2 3 4 5\"
 #define POST_DATA_TIMER1   "{\"timer_set\":[{\"id\":0,\"enable\":%d,\"time\":\"%d:%d\",\"repeat\":%d,\"week\":\"%s\"},{\"id\":1,\"enable\":%d,\"time\":\"%d:%d\",\"repeat\":%d,\"week\":\"%s\"}]}"  //\"week\":\"1 2 3 4 5\"
 
-Time_UserTask_t local_time_task[LOCAL_TIME_MAX_NUM];
+Time_UserTask_t local_time_task[LOCAL_TIME_MAX_NUM] = { 0x00 };
 
 /**
  * @brief 返回数据到云端，便于小程序同步页面显示， 根据local_time_task[]中的内容上报
@@ -24,38 +24,41 @@ int user_time_task_result_res(char *topic_name)
         rt_strncpy(send_data, "{}", 2);
     }else if (1 ==local_time_task[1].valid)
     {
-        for (i=1; i<8; i++)
+        int k = 0;
+        for (i=0; i<8; i++)
         {
             if (0 != ((1<<i) & local_time_task[0].weekday) )
             {
-                strcat(week, i + 0x30);
-                strcat(week, ' ');
+                week[k++] = (i+1 + 0x30);
+                week[k++] = ' ';
             }
         }
-        for (i=1; i<8; i++)
+        k = 0;
+        for (i=0; i<8; i++)
         {
             if (0 != ((1<<i) & local_time_task[1].weekday) )
             {
-                strcat(week1, i + 0x30);
-                strcat(week1, ' ');
+                week1[k++] = (i+1 + 0x30);
+                week1[k++] = ' ';
             }
         }
         rt_sprintf(send_data, POST_DATA_TIMER1, local_time_task[0].enable, local_time_task[0].run_hour, local_time_task[0].run_min, \
-            (local_time_task[0].weekday==0)?0:1, week, local_time_task[1].enable, local_time_task[1].run_hour, local_time_task[1].run_min,\
-            (local_time_task[1].weekday==0)?0:1, week1);
+            local_time_task[0].repeat, week, local_time_task[1].enable, local_time_task[1].run_hour, local_time_task[1].run_min,\
+            local_time_task[1].repeat, week1);
     }else if (1 ==local_time_task[0].valid)
     {
-        for (i=1; i<8; i++)
+        int k = 0;
+        for (i=0; i<8; i++)
         {
             if (0 != ((1<<i) & local_time_task[0].weekday) )
             {
-                strcat(week, i + 0x30);
-                strcat(week, ' ');
+                week[k++] = (i+1 + 0x30);
+                week[k++] = ' ';
             }
         }
-
-        rt_sprintf(send_data, POST_DATA_TIMER1, local_time_task[0].enable, local_time_task[0].run_hour, local_time_task[0].run_min, \
-            (local_time_task[0].weekday==0)?0:1, week);
+        rt_kprintf("weekday is %x,  week is:%s\r\n", local_time_task[0].weekday, week);
+        rt_sprintf(send_data, POST_DATA_TIMER0, local_time_task[0].enable, local_time_task[0].run_hour, local_time_task[0].run_min, \
+           local_time_task[0].repeat, week);
     }
     
     send_mq_msg(topic_name, send_data, strlen(send_data));
@@ -82,7 +85,7 @@ int parse_cmd(char *topic_name, uint8_t *data, int len)
     cJSON *pName = cJSON_GetObjectItem(json, "name");
     cJSON *pValue = cJSON_GetObjectItem(json, "value");
 
-    rt_kprintf("name is:%s, value is:%d\r\n", pName->valuestring, pValue->valueint);
+    rt_kprintf("name is:%s\r\n", pName->valuestring);
 
     if (0 == rt_strncmp("timer_del", pName->valuestring, strlen(pName->valuestring)))
     {
@@ -99,6 +102,7 @@ int parse_cmd(char *topic_name, uint8_t *data, int len)
         if (1 == id)
         {
             rt_kprintf("delete timer, index is %d\r\n", id);
+            local_time_task[1].valid = 0;
         }else if (0 ==id)
         {
             if (1 == local_time_task[1].valid) //存在
@@ -119,20 +123,18 @@ int parse_cmd(char *topic_name, uint8_t *data, int len)
         pData = cJSON_GetObjectItem(pValue, "time");
         sscanf(pData->valuestring, "%d:%d", &local_time_task[id].run_hour, &local_time_task[id].run_min);
         pData = cJSON_GetObjectItem(pValue, "repeat");
-        if (0 == pData->valueint)
-        {
-            local_time_task[id].weekday = 0;
-        }else if (1 == pData->valueint)
-        {
-            local_time_task[id].weekday = 1;
-        }
+        rt_kprintf("repeat is:%d\r\n", pData->valueint);
+        local_time_task[id].repeat = pData->valueint;
+        local_time_task[id].valid = 1;
         pData = cJSON_GetObjectItem(pValue, "week");
+        rt_kprintf("week is:%s\r\n", pData->valuestring);
+        local_time_task[id].weekday = 0;
         for (i = 0; i < strlen(pData->valuestring); i++)
         {
-            local_time_task[id].weekday = 0;
             if (' ' != pData->valuestring[i])
             {
-                weekday = atoi(pData->valuestring[i]);
+                weekday = pData->valuestring[i] - 0x30;
+                rt_kprintf("get weekday, compose data: %d\r\n", weekday);
                 local_time_task[id].weekday |= (1 << (weekday-1));
             }
         }

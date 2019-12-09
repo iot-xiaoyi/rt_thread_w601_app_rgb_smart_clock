@@ -28,7 +28,7 @@ int user_data_report(int temp, int humi)
 
     rt_sprintf(send_data, POST_DATA_TEMP, temp, humi);
     rt_kprintf("send_data is %s\r\n", send_data);
-    // send_mq_msg("$dp", send_data, strlen(send_data));
+    send_mq_msg("$dp", send_data, strlen(send_data));
 }
 
 void lcd_task_thread(void* arg)
@@ -36,12 +36,12 @@ void lcd_task_thread(void* arg)
 	uint8_t i = 0;
     rt_size_t res;
     rt_device_t dev = RT_NULL;
-    struct rt_sensor_data sensor_data = { 0x00 }, sensor_data_old = { 0x00 };
+    struct rt_sensor_data sensor_data = { 0x00 };
     rt_uint8_t get_data_freq = 1; /* 1Hz */
     int value_change_flag = 0;
     char sval[64] = { 0x00 };
-    uint8_t temp = 0;
-    uint8_t humi = 0;
+    uint8_t temp = 0, temp_old = 0;
+    uint8_t humi = 0, humi_old = 0;
     // get current time
     time_t now;
     char month[4] = { 0x00 };
@@ -65,7 +65,7 @@ void lcd_task_thread(void* arg)
         return;
     }
     rt_device_control(dev, RT_SENSOR_CTRL_SET_ODR, (void *)(&get_data_freq));
-    res = rt_device_read(dev, 0, &sensor_data_old, 1);
+    res = rt_device_read(dev, 0, &sensor_data, 1);
     if (res != 1)
     {
         rt_kprintf("read data failed! result is %d\n", res);
@@ -74,10 +74,10 @@ void lcd_task_thread(void* arg)
     }
     else
     {
-        if (sensor_data_old.data.temp >= 0)
+        if (sensor_data.data.temp >= 0)
         {
-            uint8_t temp = (sensor_data_old.data.temp & 0xffff) >> 0;      // get temp
-            uint8_t humi = (sensor_data_old.data.temp & 0xffff0000) >> 16; // get humi
+             temp_old = (sensor_data.data.temp & 0xffff) >> 0;      // get temp
+             humi_old = (sensor_data.data.temp & 0xffff0000) >> 16; // get humi
             rt_kprintf("temp:%d, humi:%d\n" ,temp, humi);
         }
     }
@@ -98,18 +98,18 @@ void lcd_task_thread(void* arg)
                 temp = (sensor_data.data.temp & 0xffff) >> 0;      // get temp
                 humi = (sensor_data.data.temp & 0xffff0000) >> 16; // get humi
                 rt_kprintf("temp:%d, humi:%d\r\n" ,temp, humi);
-                if (temp != sensor_data_old.data.temp)
+                if (temp != temp_old)
                 {
                     value_change_flag = 1;
-                    sensor_data_old.data.temp = temp;
-                    lcd_show_num(10+60, 20+24+24, sensor_data_old.data.temp, 1, 24);
+                    temp_old = temp;
+                    lcd_show_num(10+60, 20+24+24, temp_old, 1, 24);
                     // lcd_show_string(10+90, 20+24+24, 24, "'C");
                 }
-                if (humi != sensor_data_old.data.humi)
+                if (humi != humi_old)
                 {
                     value_change_flag = 1;
-                    sensor_data_old.data.humi = humi;
-                    lcd_show_num(10+60, 20+24+24+24, sensor_data_old.data.humi, 1, 24);
+                    humi_old = humi;
+                    lcd_show_num(10+60, 20+24+24+24, humi_old, 1, 24);
                 }
             }
         }

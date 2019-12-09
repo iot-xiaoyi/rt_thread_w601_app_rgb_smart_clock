@@ -7,7 +7,7 @@
 
 int user_task_time_coming(char *cmd)
 {
-    user_timer_log("##################### Timer coming #####################");
+    user_timer_log("##################### Timer coming #####################\r\n");
 
     user_timer_log("cmd is:%s", cmd);
 }
@@ -123,7 +123,7 @@ void user_timer_task(USER_TIME_S *current_time, uint8_t i)
 {
     if(1 == local_time_task[i].enable)
     {
-        if(local_time_task[i].weekday == 0)  //only once
+        if(local_time_task[i].repeat == 0)  //only once
         { 
             if((local_time_task[i].run_year == current_time->year ) && \
                 (local_time_task[i].run_mon == current_time->month ) && \

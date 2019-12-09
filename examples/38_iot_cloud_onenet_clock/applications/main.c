@@ -50,7 +50,6 @@ user_status_data_t *user_get_connect_status(void)
     return &data_connect_ctx;
 }
 
-
 int main(void)
 {
     int ret = 0;
@@ -102,8 +101,8 @@ int main(void)
 #define POST_DATA1    "{\"power\":\"10\",\"color\":\"1\"}"
 #define POST_DATA2    "{\"power\":\"10\",\"color\":\"2\"}"
 #define POST_DATA3    "{\"power\":\"10\",\"color\":\"3\"}"
-// #define POST_DATA4    "{\"temp\":25,\"temp_mode\":1,\"humi\":34,\"time_mode\":1,\"time_show_mode\":1,\"voice\":1,\"timer_set\":[]}"
-#define POST_DATA4    "{\"temp\":25,\"temp_mode\":1,\"humi\":34,\"time_mode\":1,\"time_show_mode\":1,\"voice\":1,\"timer_set\":[{\"id\":0,\"enable\":1,\"time\":\"09:10\",\"repeat\":0,\"week\":\"1 2 3\"},{\"id\":1,\"enable\":1,\"time\":\"07:10\",\"repeat\":1,\"week\":\"1 2 3 4 5\"}]}"
+#define POST_DATA4    "{\"temp\":25,\"temp_mode\":1,\"humi\":34,\"time_mode\":1,\"time_show_mode\":1,\"voice\":1,\"timer_set\":[]}"
+// #define POST_DATA4    "{\"temp\":25,\"temp_mode\":1,\"humi\":34,\"time_mode\":1,\"time_show_mode\":1,\"voice\":1,\"timer_set\":[{\"id\":0,\"enable\":1,\"time\":\"09:10\",\"repeat\":0,\"week\":\"1 2 3\"},{\"id\":1,\"enable\":1,\"time\":\"07:10\",\"repeat\":1,\"week\":\"1 2 3 4 5\"}]}"
 
 static void onenet_upload_entry(void *parameter)
 {
