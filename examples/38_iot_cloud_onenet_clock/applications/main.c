@@ -58,6 +58,8 @@ int main(void)
 
 	onenet_network_config();
 
+    timer_task_start();
+
     return 0;
 }
 
